@@ -16,14 +16,18 @@ router.get('/', (req, res) => {
     productService.getAll()
         .then(products => {
             if (res.locals.isAuthenticated) {
-                res.render('./users/home', { title: 'Browse', sortedProducts })
+                res.render('./users/home', { title: 'Browse', products })
             } else {
-                res.render('./guests/home', { title: 'Browse', sortedProducts });
+                res.render('./guests/home', { title: 'Browse', products });
             }
         })
         .catch((error) => {
-            console.log(error);
-            res.end();
+            const errors = errorCompiler(error);
+            if (res.locals.isAuthenticated) {
+                res.render('./users/home', { errors })
+            } else {
+                res.render('./guests/home', { errors });
+            }
         })
 });
 
@@ -32,16 +36,16 @@ router.get('/products/create', isAuthenticated, (req, res) => {
 });
 
 router.post('/products/create', isAuthenticated, (req, res) => {
-    let today = new Date();
-    req.body.createdOn = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
-    productService.create(req.body, req.user._id)
+    const productData = req.body;
+    const user = req.user;
+    productData.createdOn = new Date();
+    productService.create(productData, user._id)
         .then((createdProduct) => {
-            productService.updateDbArray(User, req.user._id, 'offers', String(createdProduct._id));
             res.redirect('/');
         })
-        .catch((err) => {
-            const errors = errorCompiler(err);
-            res.render('./users/create', errors)
+        .catch((error) => {
+            const errors = errorCompiler(error);
+            res.render('./users/create', { errors })
         })
 });
 
@@ -72,7 +76,10 @@ router.post('/products/:productId/edit', isAuthenticated, (req, res) => {
         .then(response => {
             res.redirect(`/products/${req.params.productId}/details`);
         })
-        .catch(err => { throw err });
+        .catch((error) => {
+            const errors = errorCompiler(error);
+            res.render('./users/create', { errors })
+        })
 });
 
 

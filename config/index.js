@@ -1,6 +1,7 @@
+const connection = require('../credentials');
 module.exports = {
         PORT: 3000,
-        DB_CONNECTION: 'mongodb+srv://chefyata:pomber145@cluster0.wo3t9.mongodb.net/softuniDec2020Exam',
+        DB_CONNECTION: connection,
         SALT_ROUNDS: 10,
         SECRET: 'bigSecret',
         COOKIE_NAME: 'USER_SESSION',
