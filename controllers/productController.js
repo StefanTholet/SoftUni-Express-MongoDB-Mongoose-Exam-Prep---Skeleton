@@ -87,7 +87,7 @@ router.get('/products/:productId/delete', isAuthenticated, (req, res) => {
     console.log('y')
     productService.getOne(req.params.productId)
         .then(product => {
-            productService.deleteOne(String(product._id))
+            productService.deleteOne(product._id)
         }).then((response => res.redirect('/')))
         .catch(err => { throw err });
 });

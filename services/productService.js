@@ -19,33 +19,29 @@ function updateOne(productId, productData) {
     return Product.updateOne({ _id: productId }, productData);
 }
 
-function deleteOne(productId) {	
-    return Product.deleteOne({ _id: productId });	
+function deleteOne(productId) {
+    return Product.deleteOne({ _id: productId });
 }
 
-async function updateDbArray(Document, id, arrayName, element) {
-    try {
-        const document = await Document.findById(id);
-        document[arrayName].push(element);
-        document.save();
-        return document;
-    } catch (error) {
-        console.log(error);
-        return;
-    }
+function updateDbArray(Document, id, arrayName, element) {
+    return Document.findById(id)
+        .then(document => {
+            document[arrayName].push(element);
+            return document.save();
+        })
 }
 
-// function getOneWithAccessories(id) {
-//     return Cube.findById(id)
-//         .populate('accessories')
-//         .lean();
-// }
+function getPopulated(id) {
+    return Product.findById(id)
+        .populate('buddies')
+        .lean();
+}
 
 module.exports = {
     updateDbArray,
     getAll,
     getOne,
-    //getOneWithAccessories,
+    getPopulated,
     create,
     updateOne,
     deleteOne,
@@ -55,10 +51,4 @@ module.exports = {
 //bonnus
 // function getAllSold(userId) {
 //     return Product.find({ creator: userId }).lean();
-// }
-
-// function getOneWithAccessories(id) {
-//     return Cube.findById(id)
-//         .populate('accessories')
-//         .lean();
 // }
