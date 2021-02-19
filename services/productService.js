@@ -1,5 +1,4 @@
 const Product = require('../models/Product');
-const User = require('../models/User')
 
 async function getAll() {
     let products = await Product.find({}).lean();
@@ -19,16 +18,15 @@ function updateOne(productId, productData) {
     return Product.updateOne({ _id: productId }, productData);
 }
 
-function deleteOne(productId) {
-    return Product.deleteOne({ _id: productId });
+function deleteOne(_id) {	
+    return Product.deleteOne({ _id });	
 }
 
-function updateDbArray(Document, id, arrayName, element) {
-    return Document.findById(id)
-        .then(document => {
-            document[arrayName].push(element);
-            return document.save();
-        })
+function updateDbArray(Document, id, arrayName, element) {	
+    return Document.updateOne(	
+        { _id: id },	
+        { $push: { [arrayName]: element } }	
+    )		
 }
 
 function getPopulated(id) {

@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const authService = require('../services/authService');
-const isAuthenticated = require('../middlewares/isAuthenticated');
+
 const errorCompiler = require('../controllers/helpers/errorCompiler')
 const { COOKIE_NAME } = require('../config');
 
@@ -14,10 +14,11 @@ router.post('/login', async (req, res) => {
         let token = await authService.login({ username, password });
         res.cookie(COOKIE_NAME, token);
         res.redirect('/');
-    } catch (error) {
-        const errors = errorCompiler(error);
-        res.render('./guests/login', { errors })
-    }
+    } catch (error) {	
+        const errors = errorCompiler(error);	
+        console.log(`Login unsuccessful: ${errors[0].message}`)	
+        res.render('./guests/login', { errors })	
+    }	
 });
 
 router.get('/register', (req, res) => {
@@ -35,13 +36,14 @@ router.post('/register', async (req, res) => {
         let token = await authService.login({ username, password });
         res.cookie(COOKIE_NAME, token);
         res.redirect('/');
-    } catch (error) {
-        const errors = errorCompiler(error);
-        res.render('./guests/register', { errors })
-    }
+    } catch (error) {	
+        const errors = errorCompiler(error);	
+        console.log(`Registration unsuccessful: ${errors[0].message}`)	
+        res.render('./guests/register', { errors })	
+    }	
 });
 
-router.get('/logout', isAuthenticated, (req, res) => {
+router.get('/logout', (req, res) => {
     res.clearCookie(COOKIE_NAME);
     res.redirect('/');
 });

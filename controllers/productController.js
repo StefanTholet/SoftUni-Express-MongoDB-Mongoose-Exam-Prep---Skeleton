@@ -31,11 +31,11 @@ router.get('/', (req, res) => {
         })
 });
 
-router.get('/products/create', isAuthenticated, (req, res) => {
+router.get('/products/create', (req, res) => {
     res.render('./users/create', { title: 'Create' });
 });
 
-router.post('/products/create', isAuthenticated, (req, res) => {
+router.post('/products/create', (req, res) => {
     const productData = req.body;
     const user = req.user;
     productData.createdOn = new Date();
@@ -45,6 +45,7 @@ router.post('/products/create', isAuthenticated, (req, res) => {
         })
         .catch((error) => {
             const errors = errorCompiler(error);
+            console.log(`Create unsuccessful: ${errors[0].message}`)
             res.render('./users/create', { errors })
         })
 });
@@ -63,7 +64,7 @@ router.get('/products/:productId/details', isAuthenticated, (req, res) => {
 });
 
 
-router.get('/products/:productId/edit', isAuthenticated, (req, res) => {
+router.get('/products/:productId/edit', (req, res) => {
     productService.getOne(req.params.productId)
         .then(product => {
             res.render('./users/edit', { title: 'Edit Product', product });
@@ -71,25 +72,22 @@ router.get('/products/:productId/edit', isAuthenticated, (req, res) => {
         .catch(err => { throw err });
 });
 
-router.post('/products/:productId/edit', isAuthenticated, (req, res) => {
+router.post('/products/:productId/edit', (req, res) => {
     productService.updateOne(req.params.productId, req.body)
         .then(response => {
             res.redirect(`/products/${req.params.productId}/details`);
         })
         .catch((error) => {
             const errors = errorCompiler(error);
+            console.log(`Edit unsuccessful: ${errors[0].message}`)
             res.render('./users/create', { errors })
         })
 });
 
 
 router.get('/products/:productId/delete', isAuthenticated, (req, res) => {
-    console.log('y')
-    productService.getOne(req.params.productId)
-        .then(product => {
-            productService.deleteOne(product._id)
-        }).then((response => res.redirect('/')))
-        .catch(err => { throw err });
+    productService.deleteOne(req.params.productId)	
+    .then(result => res.redirect('/'))
 });
 
 
@@ -125,6 +123,22 @@ router.get('/products/:productId/buy', (req, res) => {
             res.redirect(`/products/${id}/details`);
         })
 
+});
+
+router.get('/products/:productId/book', async (req, res) => {
+    const hotelId = req.params.productId;
+    const buyerId = req.user._id;
+    try {
+        await productService.updateDbArray(Product, hotelId, 'bookedBy', buyerId);
+        await productService.updateDbArray(User, buyerId, 'bookedHotels', hotelId);
+        const change = await Product.updateOne({ _id: hotelId }, 
+            { $inc: { freeRooms: -1 } });
+        res.redirect(`/products/${hotelId}/details`);
+    } catch (error) {
+        console.log(error)
+        const errors = errorCompiler(error);
+        res.render('./users/details', { errors })
+    }
 });
 
 module.exports = router;
